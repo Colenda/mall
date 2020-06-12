@@ -19,4 +19,4 @@ npm run build
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ### 学习进度
-+ 第一天：实现首页轮播图及推荐位
++ 第一天：实现首页导航，轮播图及推荐位
