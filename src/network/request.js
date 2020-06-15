@@ -9,20 +9,16 @@ export function request(config) {
 
 	//axios拦截器
 	instance.interceptors.request.use(config => {
-		console.log(config);
 		//处理不符合要求的信息
 		//加入请求加载图标
 		//某些网络请求比如登录token需要特殊信息
 		return config
 	}, err => {
-		console.log(err);
 	})
 
 	instance.interceptors.response.use(res => {
-		console.log(res)
 		return res.data
 	}, err => {
-		console.log(err)
 	})
 
 	//发送请求
