@@ -6,18 +6,22 @@
       </template>
     </nav-bar>
 
-    <home-swiper :banners="banners"></home-swiper>
+    <scroll class="content" ref="scroll" :probe-type="3" @scroll="contentScroll" :pull-up-load="true" @pullingUp="loadMore">
+      <home-swiper :banners="banners"></home-swiper>
 
-    <recommend-view :recommends="recommends"></recommend-view>
+      <recommend-view :recommends="recommends"></recommend-view>
 
-    <feature-view></feature-view>
+      <feature-view></feature-view>
 
-    <tab-control :titles="['流行','新款','精选']"
-                 class="tab-control"
-                 @tabClick="tabClick">
-    </tab-control>
+      <tab-control :titles="['流行','新款','精选']"
+                   class="tab-control"
+                   @tabClick="tabClick">
+      </tab-control>
 
-    <goods-list :goods="goods[type].list"></goods-list>
+      <goods-list :goods="goods[type].list"></goods-list>
+    </scroll>
+
+    <back-top @click.native="backClick" v-show="isShow"></back-top>
   </div>
 </template>
 
@@ -29,6 +33,8 @@
   import NavBar from "components/common/navbar/NavBar.vue"
   import TabControl from "components/content/tabControl/TabControl.vue"
   import GoodsList from "components/content/goods/GoodsList.vue"
+  import Scroll from "components/common/scroll/Scroll.vue"
+  import BackTop from "components/content/backTop/BackTop.vue"
 
   import {
     getHomeMultidata, getHomeGoods
@@ -42,7 +48,9 @@
       RecommendView,
       FeatureView,
       TabControl,
-      GoodsList
+      GoodsList,
+      Scroll,
+      BackTop
     },
     data() {
       return {
@@ -53,7 +61,8 @@
           'new': {page: 0, list: []},
           'sell': {page: 0, list: []}
         },
-        type: 'pop'
+        type: 'pop',
+        isShow: false
       }
     },
     created() {
@@ -75,6 +84,18 @@
         }
       },
 
+      backClick() {
+        this.$refs.scroll.scroll.scrollTo(0, 0, 500)
+      },
+
+      contentScroll(position) {
+        this.isShow = -position.y > 1000
+      },
+
+      loadMore() {
+        this.getHomeGoods(this.type)
+        this.$refs.scroll.scroll.refresh()
+      },
       //网络请求方法
       getHomeMultidata() {
         getHomeMultidata().then(res => {
@@ -87,18 +108,24 @@
       getHomeGoods(type) {
         const page = this.goods[type].page + 1;
         getHomeGoods(type, page).then(res => {
+          console.log("新增商品列表数据：")
+          console.log(res.data.list)
           this.goods[type].list.push(...res.data.list)
           this.goods[type].page += 1
+          //重置上拉
+          this.$refs.scroll.scroll.finishPullUp()
         })
       }
     }
   }
 </script>
 
-<style>
+<style scoped="scoped">
   #home {
     padding-top: 44px;
     padding-bottom: 100px;
+    height: 100vh;
+    position: relative;
   }
 
   .nav-bar {
@@ -111,8 +138,15 @@
     z-index: 9;
   }
 
-  .tab-control {
+  #home .tab-control {
     position: sticky;
     top: 44px
+  }
+
+  .content {
+    overflow: hidden;
+    position: absolute;
+    top: 44px;
+    bottom: 49px;
   }
 </style>
