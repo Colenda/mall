@@ -18,7 +18,7 @@
     height: 43px;
     position: fixed;
     right: 12px;
-    bottom: 55px;
+    bottom: 60px;
   }
 
   .back-top img {
