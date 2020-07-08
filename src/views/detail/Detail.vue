@@ -13,7 +13,7 @@
       <detail-comment-info ref="comment" :comment-info="commentInfo"></detail-comment-info>
       <goods-list ref="recommend" :goods="recommends"></goods-list>
     </scroll>
-    <detail-bottom-bar></detail-bottom-bar>
+    <detail-bottom-bar @addToCart="addToCart"></detail-bottom-bar>
     <!-- 下面是返回顶部按钮 -->
     <back-top @click.native="backClick" v-show="isShow"></back-top>
   </div>
@@ -42,6 +42,8 @@
   } from "network/detail"
   import {itemListenerMixin} from "common/mixin"
   import {debounce} from "common/utils"
+
+  import {mapActions} from "vuex"
   export default {
     name: 'Detail',
     components: {
@@ -111,6 +113,7 @@
       this.$bus.$off('itemImageLoad', this.itemImgListener)
     },
     methods: {
+      ...mapActions(['addCart']),
       detailImageLoad() {
         this.scroll && this.refresh();
         this.getThemeTopY()
@@ -138,6 +141,20 @@
       backClick() {
         this.$refs.scroll.scroll.scrollTo(0, 0, 500)
       },
+      addToCart() {
+        //获取购物车需要展示的商品信息
+        const product = {}
+        product.img = this.topImages[0]
+        product.title = this.goods.title
+        product.desc = this.goods.desc
+        product.price = this.goods.realPrice
+        product.iid = this.iid
+        //添加商品到购物车
+
+        this.addCart(product).then(res => {
+          this.$toast.show(res, 2000)
+        })
+      }
     }
   }
 </script>

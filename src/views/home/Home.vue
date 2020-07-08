@@ -84,7 +84,7 @@
     mounted() {
     },
     activated() {
-      this.$refs.scroll.scroll.scrollTo(0, this.saveY)
+      this.$refs.scroll.scroll.scrollTo(0, this.saveY, 10)
       this.$refs.scroll.scroll.refresh()
     },
     deactivated() {
