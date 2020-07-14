@@ -1,141 +1,152 @@
 <template>
-  <div class="wrapper" ref="scroll">
-    <ul class="content">
-      <li>内容1</li>
-      <li>内容2</li>
-      <li>内容3</li>
-      <li>内容4</li>
-      <li>内容5</li>
-      <li>内容6</li>
-      <li>内容7</li>
-      <li>内容8</li>
-      <li>内容9</li>
-      <li>内容10</li>
-      <li>内容11</li>
-      <li>内容12</li>
-      <li>内容13</li>
-      <li>内容14</li>
-      <li>内容15</li>
-      <li>内容16</li>
-      <li>内容17</li>
-      <li>内容18</li>
-      <li>内容19</li>
-      <li>内容20</li>
-      <li>内容21</li>
-      <li>内容22</li>
-      <li>内容23</li>
-      <li>内容24</li>
-      <li>内容25</li>
-      <li>内容26</li>
-      <li>内容27</li>
-      <li>内容28</li>
-      <li>内容29</li>
-      <li>内容30</li>
-      <li>内容31</li>
-      <li>内容32</li>
-      <li>内容33</li>
-      <li>内容34</li>
-      <li>内容35</li>
-      <li>内容36</li>
-      <li>内容37</li>
-      <li>内容38</li>
-      <li>内容39</li>
-      <li>内容40</li>
-      <li>内容41</li>
-      <li>内容42</li>
-      <li>内容43</li>
-      <li>内容44</li>
-      <li>内容45</li>
-      <li>内容46</li>
-      <li>内容47</li>
-      <li>内容48</li>
-      <li>内容49</li>
-      <li>内容50</li>
-      <li>内容51</li>
-      <li>内容52</li>
-      <li>内容53</li>
-      <li>内容54</li>
-      <li>内容55</li>
-      <li>内容56</li>
-      <li>内容57</li>
-      <li>内容58</li>
-      <li>内容59</li>
-      <li>内容60</li>
-      <li>内容61</li>
-      <li>内容62</li>
-      <li>内容63</li>
-      <li>内容64</li>
-      <li>内容65</li>
-      <li>内容66</li>
-      <li>内容67</li>
-      <li>内容68</li>
-      <li>内容69</li>
-      <li>内容70</li>
-      <li>内容71</li>
-      <li>内容72</li>
-      <li>内容73</li>
-      <li>内容74</li>
-      <li>内容75</li>
-      <li>内容76</li>
-      <li>内容77</li>
-      <li>内容78</li>
-      <li>内容79</li>
-      <li>内容80</li>
-      <li>内容81</li>
-      <li>内容82</li>
-      <li>内容83</li>
-      <li>内容84</li>
-      <li>内容85</li>
-      <li>内容86</li>
-      <li>内容87</li>
-      <li>内容88</li>
-      <li>内容89</li>
-      <li>内容90</li>
-      <li>内容91</li>
-      <li>内容92</li>
-      <li>内容93</li>
-      <li>内容94</li>
-      <li>内容95</li>
-      <li>内容96</li>
-      <li>内容97</li>
-      <li>内容98</li>
-      <li>内容99</li>
-      <li>内容100</li>
-    </ul>
+  <div id="category">
+    <nav-bar class="nav-bar"><div slot="center">商品分类</div></nav-bar>
+    <div class="cate-content">
+      <tab-menu :categories="categories"
+                @selectItem="selectItem"></tab-menu>
+
+      <scroll id="tab-content" :data="[categoryData]">
+        <div>
+          <tab-content-category :subcategories="showSubcategory"></tab-content-category>
+          <tab-control :titles="['综合', '新品', '销量']"
+                       @itemClick="tabClick"
+                       class="titles"></tab-control>
+          <tab-content-detail :category-detail="showCategoryDetail"></tab-content-detail>
+        </div>
+      </scroll>
+    </div>
   </div>
 </template>
 
 <script>
-  import BScroll from "better-scroll"
+  import NavBar from 'components/common/navbar/NavBar'
+
+  import TabMenu from './childComps/TabMenu'
+  import TabControl from 'components/content/tabControl/TabControl'
+  import Scroll from 'components/common/scroll/Scroll'
+  import TabContentCategory from './childComps/TabContentCategory'
+  import TabContentDetail from './childComps/TabContentDetail'
+
+  import {getCategory, getSubcategory, getCategoryDetail} from "network/category";
+  import {POP, SELL, NEW} from "@/common/const";
+  import {tabControlMixin} from "@/common/mixin";
 
   export default {
-    name: 'Category',
+		name: "Category",
+    components: {
+		  NavBar,
+      TabMenu,
+      TabControl,
+      Scroll,
+      TabContentCategory,
+      TabContentDetail
+    },
+    mixins: [tabControlMixin],
     data() {
-      return {
-        scroll: null
+		  return {
+		    categories: [],
+        categoryData: {
+        },
+        currentIndex: -1
       }
     },
-    mounted() {
-      this.scroll = new BScroll(this.$refs.scroll, {
-        probeType: 3,
-        pullUpLoad: true
-      })
-
-      this.scroll.on('scroll', (position) => {
-        // console.log(position)
-      })
-
-      this.scroll.on('pullingUp', () => {
-        console.log("上拉加载更多")
-      })
+    created() {
+		  // 1.请求分类数据
+      this._getCategory()
+    },
+    computed: {
+		  showSubcategory() {
+		    if (this.currentIndex === -1) return {}
+        return this.categoryData[this.currentIndex].subcategories
+      },
+      showCategoryDetail() {
+		    if (this.currentIndex === -1) return []
+		    return this.categoryData[this.currentIndex].categoryDetail[this.currentType]
+      }
+    },
+    methods: {
+		  _getCategory() {
+		    getCategory().then(res => {
+		      // 1.获取分类数据
+		      this.categories = res.data.category.list
+          // 2.初始化每个类别的子数据
+          for (let i = 0; i < this.categories.length; i++) {
+            this.categoryData[i] = {
+              subcategories: {},
+              categoryDetail: {
+                'pop': [],
+                'new': [],
+                'sell': []
+              }
+            }
+          }
+          // 3.请求第一个分类的数据
+          this._getSubcategories(0)
+        })
+      },
+      _getSubcategories(index) {
+        this.currentIndex = index;
+		    const mailKey = this.categories[index].maitKey;
+        getSubcategory(mailKey).then(res => {
+          this.categoryData[index].subcategories = res.data
+          this.categoryData = {...this.categoryData}
+          this._getCategoryDetail(POP)
+          this._getCategoryDetail(SELL)
+          this._getCategoryDetail(NEW)
+        })
+      },
+      _getCategoryDetail(type) {
+		    // 1.获取请求的miniWallkey
+        const miniWallkey = this.categories[this.currentIndex].miniWallkey;
+        // 2.发送请求,传入miniWallkey和type
+		    getCategoryDetail(miniWallkey, type).then(res => {
+		      // 3.将获取的数据保存下来
+		      this.categoryData[this.currentIndex].categoryDetail[type] = res
+          this.categoryData = {...this.categoryData}
+        })
+      },
+      /**
+       * 事件响应相关的方法
+       */
+      selectItem(index) {
+        this._getSubcategories(index)
+      }
     }
-  }
+	}
 </script>
 
-<style scoped="scoped">
+<style scoped>
+  #category {
+    height: 100vh;
+  }
+
+  .nav-bar {
+    background-color: var(--color-tint);
+    font-weight: 700;
+    color: #fff;
+    z-index: 999;
+  }
+
+  .cate-content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 44px;
+    bottom: 49px;
+
+    display: flex;
+  }
+  
   .wrapper {
-    height: 150px;
-    background-color: #144141;
     overflow: hidden;
+  }
+
+  #tab-content {
+    height: 100%;
+    flex: 1;
+  }
+
+  .titles {
+    white-space: nowrap;
   }
 </style>

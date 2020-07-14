@@ -87,7 +87,7 @@
   .calculate {
     line-height: 40px;
     position: absolute;
-    left: 230px;
+    right: 0px;
     width: 90px;
     background-color: var(--color-high-text);
     text-align: center;
